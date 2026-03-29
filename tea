@@ -1,0 +1,100 @@
+#one sample Z-Test:
+Given: xbar= 53, μ0 = 50, σ = 10, n = 36
+z <- (53 - 50) / (10 / sqrt (36) )
+z
+alpha =0.05
+z _ crit <- qnorm (1 - alpha )
+z _ crit
+Reject H0 if abs ( z ) > z_crit
+
+#one sample t test:
+Given: Sample
+x = [52, 49, 51, 50, 53, 48, 54, 52, 47, 51, 50, 49, 52, 53, 48, 51]
+x <- c
+(52 ,49 ,51 ,50 ,53 ,48 ,54 ,52 ,47 ,51 ,50 ,49 ,52 ,53 ,48 ,51)
+n <- length ( x )
+xbar <- mean ( x )
+s <- sd ( x )
+mu0 <- 50
+t _ stat <- ( xbar - mu0 ) / ( s / sqrt ( n ) )
+t _ stat
+Step 2: Critical Value
+t _ crit <- qt (0.975 , df = n -1)
+t _ crit
+Step 3: Decision
+if(abs(ts tat) > tc rit) ”Reject H0” else ”FailtoRejectH0”
+
+#paired t test:
+Given: Before and After data
+before <- c (70 ,65 ,80 ,75 ,68 ,72 ,77 ,69 ,74 ,71)
+after <- c (75 ,70 ,85 ,78 ,72 ,76 ,80 ,73 ,79 ,74)
+d <- before - after
+n <- length ( d )
+dbar <- mean ( d )
+sd _ d <- sd ( d )
+t _ stat <- dbar / ( sd _ d / sqrt ( n ) )
+t _ stat
+t _ crit <- qt (0.975 , df = n -1)
+t _ crit
+
+#two sample t test: equal variance
+group1 <- c (60 ,62 ,59 ,61 ,58 ,63 ,57 ,64 ,60 ,59)
+group2 <- c (55 ,54 ,56 ,53 ,57 ,52 ,58 ,54 ,55 ,56)
+n1 <- length ( group1 )
+n2 <- length ( group2 )
+xbar1 <- mean ( group1 )
+xbar2 <- mean ( group2 )
+s1 <- sd ( group1 )
+s2 <- sd ( group2 )
+sp2 <- (( n1 -1) * s1 ^2 + ( n2 -1) * s2 ^2) / ( n1 + n2 -2)
+sp <- sqrt ( sp2 )
+t _ stat <- ( xbar1 - xbar2 ) / ( sp * sqrt (1 / n1 + 1 / n2 ) )
+t _ stat
+t _ crit <- qt (0.975 , df = n1 + n2 -2)
+t _ crit
+
+#two sample t test: unequal var/welch 
+group1 <- c (70 ,75 ,68 ,72 ,69 ,74 ,73 ,71)
+group2 <- c (60 ,62 ,58 ,61 ,59 ,63 ,57 ,64)
+n1 <- length ( group1 )
+n2 <- length ( group2 )
+xbar1 <- mean ( group1 )
+xbar2 <- mean ( group2 )
+s1 <- sd ( group1 )
+s2 <- sd ( group2 )
+t _ stat <- ( xbar1 - xbar2 ) / sqrt ( s1 ^2 / n1 + s2 ^2 / n2 )
+df <- ( s1 ^2 / n1 + s2 ^2 / n2 ) ^2 /
+(( s1 ^2 / n1 ) ^2 / ( n1 -1) + ( s2 ^2 / n2 ) ^2 / ( n2 -1) )
+t _ crit <- qt (0.975 , df = df )
+
+#Mean test in R by using package:
+Note: R does NOT have built-in z.test() function. We use the BSDA
+package.
+Install and Load Package:
+install . packages ( " BSDA " )
+library ( BSDA )
+####
+mu0=70
+mu1=75
+alpha=0.05
+sigma=10
+n=36
+SE=sigma/sqrt(n)
+Z_alpha=qnorm(1-alpha)
+critical_mean=mu0+Z_alpha*SE
+x=seq(60,90,length=1000)
+
+h0=dnorm(x,mu0,SE)
+h1=dnorm(x,mu1,SE)
+plot(x,h0,type="l",main="plot",xlab="sample mean",ylab="density",col="blue")
+lines(x,h1,col="red")
+abline(v=critical_mean,col="red",lty=3,lwd=2)
+x_p=seq(critical_mean,90,length=1000)
+z_p=dnorm(x_p,mu1,SE)
+polygon(c(critical_mean,x_p),c(0,z_p),col="pink")
+legend("topright",
+       legend = c("H0", "H1", "Power"),
+       col = c("blue", "red", "pink"),
+       lwd = 2,
+       cex = 0.8,
+       bty = "n")

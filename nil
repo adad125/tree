@@ -1,0 +1,1285 @@
+Indexing a Data Frame
+Create a data frame:
+student <- data.frame(
+ID = 1:5,
+Name = c("Rahim", "Karim", "Hasan", "Nila", "Mina"),
+Gender = c("M", "M", "M", "F", "F"),
+Marks = c(75, 82, 68, 90, 85)
+)
+student
+Select a column
+student$Name
+or
+student[, "Name"]
+Select a row
+student[1, ]
+Select several rows
+student[1:3, ]
+Select specific rows and columns
+student[1:3, 2:4]
+Select students with marks greater than 80
+student[student$Marks > 80, ]
+Select female students
+student[student$Gender == "F", ]
+Select female students with marks > 80
+
+student[student$Gender == "F" & student$Marks > 80, ]
+Grouping Data in R
+Grouping is useful for calculating statistics separately for different groups.
+Consider:
+student <- data.frame(
+Name = c("Rahim", "Karim", "Hasan", "Nila", "Mina", "Rita"),
+Gender = c("M", "M", "M", "F", "F", "F"),
+Department = c("Statistics", "Statistics", "Math",
+"Statistics", "Math", "Math"),
+Marks = c(75, 82, 68, 90, 85, 78)
+)
+student
+Using tapply()
+Find mean marks by gender:
+tapply(student$Marks, student$Gender, mean)
+Find maximum marks by gender:
+tapply(student$Marks, student$Gender, max)
+Find number of students by gender:
+tapply(student$Marks, student$Gender, length)
+Grouping Using aggregate()
+Mean marks by gender:
+aggregate(Marks ~ Gender, data = student, FUN = mean)
+Mean marks by department:
+aggregate(Marks ~ Department, data = student, FUN = mean)
+Multiple statistics:
+aggregate(Marks ~ Department, data = student, FUN = summary)
+Grouping Using dplyr
+First install/load dplyr:
+install.packages("dplyr")
+library(dplyr)
+group_by()
+student %>%
+group_by(Gender)
+Mean marks by gender
+student %>%
+group_by(Gender) %>%
+
+summarise(
+Mean_Marks = mean(Marks)
+)
+Several statistics
+student %>%
+group_by(Gender) %>%
+summarise(
+Number = n(),
+Mean = mean(Marks),
+Minimum = min(Marks),
+Maximum = max(Marks)
+)
+Group by department
+student %>%
+group_by(Department) %>%
+summarise(
+Number = n(),
+Mean_Marks = mean(Marks)
+)
+Group by two variables
+student %>%
+group_by(Department, Gender) %>%
+summarise(
+Number = n(),
+Mean_Marks = mean(Marks)
+)
+Grouping + Filtering
+Find groups whose mean mark is greater than 80:
+student %>%
+group_by(Gender) %>%
+summarise(
+Mean_Marks = mean(Marks)
+) %>%
+filter(Mean_Marks > 80)
+
+## Factor
+
+
+Creating a Factor: Use the factor() function.
+gender <- factor(c("Male", "Female", "Female", "Male", "Male"))
+gender
+Output:
+[1] Male Female Female Male Male
+Levels: Female Male
+Checking Whether an Object Is a Factor
+is.factor(gender)
+Output: TRUE
+check the data type:
+class(gender)
+Output:
+"factor"
+Finding Factor Levels: Use levels().
+levels(gender)
+Output:
+[1] "Female" "Male"
+Number of levels: nlevels(gender)
+Output: 2
+
+Factor with Numerical Categories
+Suppose we have education levels:
+education <- factor(
+
+c("Primary", "Secondary", "Graduate", "Graduate", "Primary")
+)
+education
+The categories are:
+Primary
+Secondary
+Graduate
+Check them:
+levels(education)
+Specifying the Order of Levels: By default, R generally orders factor levels alphabetically.
+You can specify the order yourself.
+education <- factor(
+c("Primary", "Secondary", "Graduate"),
+levels = c("Primary", "Secondary", "Graduate")
+)
+education
+This is particularly useful when categories have a meaningful order.
+
+Ordered Factors: Some categorical variables have a natural order.
+For example:
+Low < Medium < High
+Create an ordered factor:
+risk <- factor(
+c("Low", "High", "Medium", "Low"),
+levels = c("Low", "Medium", "High"),
+ordered = TRUE
+)
+risk
+Check: is.ordered(risk)
+Output: TRUE
+Comparing Ordered Factors: Because risk is ordered, we can compare its categories.
+
+risk[1] < risk[2]
+For example:
+Low < High
+returns:
+TRUE
+This is useful for variables such as:
+• Education: Primary < Secondary < Graduate
+• Satisfaction: Poor < Fair < Good < Excellent
+• Disease severity: Mild < Moderate < Severe
+• Income group: Low < Middle < High
+
+Factor in a Data Frame
+Consider a student dataset:
+student <- data.frame(
+ID = 1:6,
+Name = c("Rahim", "Karim", "Nila", "Sadia", "Hasan", "Rafi"),
+Gender = c("Male", "Male", "Female", "Female", "Male", "Male"),
+Department = c("Statistics", "Mathematics",
+"Statistics", "Physics",
+"Mathematics", "Statistics")
+)
+student
+Convert categorical variables to factors:
+student$Gender <- factor(student$Gender)
+student$Department <- factor(student$Department)
+str(student)
+Creating a Factor Directly in a Data Frame
+student$Gender <- factor(
+student$Gender,
+levels = c("Female", "Male")
+)
+
+Counting Categories: Use table():
+table(student$Gender)
+Example output:
+Female Male
+2 4
+For two categorical variables:
+table(student$Gender, student$Department)
+This creates a contingency table.
+Factor and summary(): summary(student$Gender)
+This gives the frequency of each category.
+
+Changing Factor Levels
+gender <- factor(
+c("M", "F", "F", "M", "M")
+)
+We can change the labels:
+levels(gender) <- c("Female", "Male")
+However, this approach depends on the existing level order, so a safer method is:
+gender <- factor(
+gender,
+levels = c("F", "M"),
+labels = c("Female", "Male")
+)
+labels Argument: You can directly specify labels when creating a factor.
+gender <- factor(
+c("M", "F", "F", "M"),
+levels = c("F", "M"),
+labels = c("Female", "Male")
+)
+gender
+
+Converting Character to Factor
+x <- c("Male", "Female", "Male")
+x
+Currently:
+class(x)
+gives:
+"character"
+Convert:
+x <- factor(x)
+class(x)
+Now:
+"factor"
+Converting Factor to Character
+gender <- factor(c("Male", "Female", "Male"))
+gender_character <- as.character(gender)
+gender_character
+Check:
+class(gender_character)
+Output:
+"character"
+
+Factor to Numeric — Important
+x <- factor(c("10", "20", "30", "40"))
+as.numeric(x)
+You may not get:
+10 20 30 40
+Instead, R returns the internal level codes, such as:
+1 2 3 4
+Correct code
+as.numeric(as.character(x))
+Output:
+
+10 20 30 40
+This is a very important issue when working with data.
+
+The difference is very important when creating factors.
+• levels = the original values/categories that R should recognize.
+• labels = the new names you want to display/use for those levels.
+Very Important: Position Matters
+x <- factor(
+c("1", "2", "3"),
+levels = c("1", "2", "3"),
+labels = c("Low", "Medium", "High")
+)
+x
+Suppose your original data contains:
+education <- c("1", "2", "3", "1", "2")
+You want:
+1 = Primary
+2 = Secondary
+3 = Higher
+Use:
+education <- factor(
+education,
+levels = c("1", "2", "3"),
+labels = c("Primary", "Secondary", "Higher")
+)
+education
+
+
+Conditional Execution
+• Conditional execution is the process of executing a particular statement or block of
+statements only when a specified condition is satisfied.
+• In R, a condition normally produces either: TRUE or FALSE
+Basic idea
+Condition
+
+┌──────┴──────┐
+TRUE FALSE
+| |
+
+Execute code Do not execute
+Example: age <- 20
+if (age >= 18) {
+print("Adult")
+}
+R evaluates:
+age >= 18
+20 >= 18 → TRUE
+the output is:"Adult"
+If: age <- 15
+then: 15 >= 18 → FALSE
+
+Greater Than >:
+x <- 25
+x > 20
+Output: TRUE
+Less Than <:
+x <- 15
+x < 20
+Output: TRUE
+Greater Than or Equal To >=:
+marks <- 40
+marks >= 40
+Output: TRUE
+This is useful when the boundary value is included.
+For example:
+if (marks >= 40) {
+print("Pass")
+}
+A student with exactly 40 marks will pass.
+
+Less Than or Equal To <=:
+age <- 18
+age <= 18
+Output: TRUE
+Equal To ==:
+x <- 10
+x == 10
+Output: TRUE
+Not Equal To !=:
+x <- 10
+x != 5
+Output: TRUE
+AND Operator &: Both conditions must be TRUE.
+age <- 25
+age >= 18 & age <= 60
+Evaluation:
+age >= 18 → TRUE
+age <= 60 → TRUE
+TRUE
+Example
+marks <- 75
+if (marks >= 40 & marks <= 100) {
+print("Valid marks")
+}
+OR Operator | : At least one condition must be TRUE.
+age <- 65
+age < 18 | age > 60
+Evaluation:
+age < 18 → FALSE
+age > 60 → TRUE
+
+Therefore: TRUE
+Example
+if (age < 18 | age > 60) {
+print("Special age group")
+}
+NOT Operator !: The ! operator reverses a logical value.
+x <- 10
+x > 5
+gives: TRUE
+But: !(x > 5)
+gives: FALSE
+if Statement: The if statement is used when a block of code should be executed only if a
+condition is TRUE.
+Syntax:
+if (condition) {
+statement
+}
+Example:
+marks <- 75
+if (marks >= 40) {
+print("Pass")
+}
+Output: "Pass"
+If:
+marks <- 30
+nothing is printed because the condition is FALSE.
+
+if Statement with Multiple Commands: An if block can contain multiple statements.
+marks <- 85
+
+if (marks >= 80) {
+print("Excellent")
+print("Grade A+")
+print("High performance")
+}
+Output:
+[1] "Excellent"
+[1] "Grade A+"
+[1] "High performance"
+
+if-else Statement: The if-else statement is used when there are two possible outcomes.
+Syntax:
+if (condition) {
+statement_if_true
+} else {
+statement_if_false
+}
+Example:
+marks <- 35
+if (marks >= 40) {
+print("Pass")
+} else {
+print("Fail")
+}
+Output: "Fail"
+Practical Example: Voting Eligibility
+age <- 19
+if (age >= 18) {
+print("Eligible to vote")
+} else {
+print("Not eligible to vote")
+
+}
+Output: "Eligible to vote"
+Practical Example: Even or Odd: The %% operator returns the remainder after division.
+number <- 15
+if (number %% 2 == 0) {
+print("Even")
+} else {
+print("Odd")
+}
+Since: 15 %% 2 = 1, the number is odd
+else if Statement: If there are more than two possible outcomes, use else if.
+Syntax:
+if (condition1) {
+} else if (condition2) {
+} else if (condition3) {
+} else {}
+
+R code:
+marks <- 76
+if (marks >= 80) {
+grade <- "A+"
+} else if (marks >= 70) {
+grade <- "A"
+} else if (marks >= 60) {
+
+grade <- "B"
+} else if (marks >= 50) {
+grade <- "C"
+} else if (marks >= 40) {
+grade <- "D"
+} else {
+grade <- "F"
+}
+print(grade)
+Output: "A"
+Nested Conditions: A nested condition means placing one conditional statement inside
+another.
+General structure:
+if (condition1) {
+if (condition2) {
+statement
+}
+}
+The inner condition is evaluated only when the outer condition is TRUE.
+Example: Nested Conditions
+age <- 25
+gender <- "Female"
+if (age >= 18) {
+if (gender == "Female") {
+print("Adult female")
+} else {
+print("Adult male")
+}
+} else {
+print("Minor")
+}
+
+Output: "Adult female"
+Nested Conditions: Student Performance:
+Suppose:
+Marks ≥ 40 → Pass
+Among passing students, marks ≥ 80 → Distinction;
+R code:
+marks <- 85
+if (marks >= 40) {
+print("Pass")
+if (marks >= 80) {
+print("Distinction")
+}
+} else {
+print("Fail")
+}
+Output:
+"Pass"
+"Distinction"
+Nested Conditions with Attendance
+Suppose: Attendance ≥ 75% → eligible
+Among eligible students:
+o Marks ≥ 80 → Excellent
+o Marks < 80 → Regular
+R code:
+marks <- 85
+attendance <- 80
+if (attendance >= 75) {
+print("Eligible for examination")
+if (marks >= 80) {
+print("Excellent performance")
+} else {
+
+print("Regular performance")
+}
+} else {
+print("Not eligible for examination")
+}
+Nested Conditions in Health Data:
+Suppose:
+• Age ≥ 60 → older patient
+• Among older patients:
+o BP ≥ 140 → high risk
+o BP < 140 → moderate risk
+• Age < 60 → lower-risk age group
+R code:
+age <- 65
+bp <- 150
+if (age >= 60) {
+if (bp >= 140) {
+print("High risk")
+} else {
+print("Moderate risk")
+}
+} else {
+print("Lower-risk age group")
+}
+Output: "High risk"
+Practical Application: BMI Classification
+bmi <- 27
+R code:
+if (bmi < 18.5) {
+category <- "Underweight"
+} else if (bmi < 25) {
+
+category <- "Normal"
+} else if (bmi < 30) {
+category <- "Overweight"
+} else {
+category <- "Obese"
+}
+print(category)
+Output: "Overweight"
+Practical Application: Income Classification:
+income <- 45000
+R code:
+if (income < 20000) {
+group <- "Low"
+} else if (income < 50000) {
+group <- "Middle"
+} else {
+group <- "High"
+}
+print(group)
+Output: "Middle"
+Practical Application: Scholarship Eligibility
+Criteria:
+• Marks ≥ 80
+• Attendance ≥ 75%
+R code:
+marks <- 85
+attendance <- 80
+if (marks >= 80 & attendance >= 75) {
+print("Eligible for scholarship")
+} else {
+print("Not eligible for scholarship")}
+
+Practical Application: Patient Risk:
+Suppose:
+• Age ≥ 60 AND BP ≥ 140 → High
+• Age ≥ 60 OR BP ≥ 140 → Moderate
+• Otherwise → Low
+R code:
+age <- 65
+bp <- 150
+if (age >= 60 & bp >= 140) {
+risk <- "High"
+} else if (age >= 60 | bp >= 140) {
+risk <- "Moderate"
+} else {
+risk <- "Low"
+}
+print(risk)
+Output: "High"
+Practical Application: Binary Variable:
+Conditional statements are very important in data preparation and statistical analysis.
+Suppose:
+status <- c("Yes", "No", "Yes", "No", "Yes")
+We want: Yes → 1 and No → 0
+R code:
+status_binary <- ifelse(
+status == "Yes", 1, 0
+)
+status_binary
+Output: 1 0 1 0 1
+This type of coding is frequently used when preparing variables for statistical models.
+
+Practical Application: Age Grouping
+Suppose: age <- c(12, 17, 25, 35, 62, 70)
+
+We want:
+<18 → Child
+18–59 → Adult
+≥60 → Older Adult
+R code:
+age_group <- ifelse(
+age < 18,
+"Child",
+ifelse(
+age < 60,
+"Adult",
+"Older Adult"
+)
+)
+age_group
+ifelse() Function: ifelse() is useful when applying a condition to a vector.
+Syntax: ifelse(condition, value_if_true, value_if_false)
+Example: marks <- c(35, 45, 67, 80, 30)
+R code:
+result <- ifelse(
+marks >= 40,
+"Pass",
+"Fail"
+)
+result
+
+case_when() for Multiple Categories: For multiple categories, case_when() is often
+clearer than many nested ifelse() statements.
+library(dplyr)
+marks <- c(35, 48, 65, 75, 90)
+grade <- case_when(
+marks >= 80 ~ "A+",
+marks >= 70 ~ "A",
+marks >= 60 ~ "B",
+marks >= 40 ~ "C",
+TRUE ~ "F"
+)
+grade
+Conditional Statements in Data Analysis:
+Conditional statements are widely used for:
+1. Data cleaning
+data$age_group <- ifelse(
+data$age >= 18,
+"Adult",
+"Child"
+)
+2. Recoding
+data$sex_binary <- ifelse(
+data$sex == "Male", 1, 0
+)
+3. Creating binary outcomes
+data$outcome <- ifelse(
+data$status == "Yes", 1, 0
+)
+4. Creating risk groups
+data$risk <- ifelse(
+
+data$bp >= 140,
+"High",
+"Normal"
+)
+5. Creating categories
+data$age_group <- case_when(
+data$age < 18 ~ "Child",
+data$age < 60 ~ "Adult",
+TRUE ~ "Older Adult"
+)
+
+
+
+Looping in R
+Looping is a programming technique used to execute a block of code repeatedly. Instead
+of writing the same statements multiple times, we can use a loop to repeat them
+automatically.
+For example, suppose we want to print the numbers 1 to 5. Without a loop:
+print(1)
+print(2)
+print(3)
+print(4)
+print(5)
+Using a loop:
+for (i in 1:5) {
+print(i)
+}
+
+For Loop in R
+A for loop is used when we know the sequence or number of times that we want to execute
+a block of statements.
+Basic Syntax
+for (variable in sequence) {
+statements
+}
+Components
+• variable → takes one value at a time from the sequence
+• sequence → values through which the loop moves
+
+• statements → code executed during each iteration
+Example
+for (i in 1:5) {
+print(i)
+}
+
+Print numbers from 1 to 10:
+for (i in 1:10) {
+print(i)
+}
+Print even numbers:
+for (i in 1:20) {
+if (i %% 2 == 0) {
+print(i)
+}
+}
+Print odd numbers:
+for (i in 1:20) {
+if (i %% 2 != 0) {
+print(i)
+}
+}
+For Loop Through a Vector:
+A for loop can directly iterate through the elements of a vector.
+students <- c("Rahim", "Karim", "Sumaiya", "Nusrat")
+for (name in students) {
+print(name)
+}
+Here, name takes each element of the vector.
+
+For Loop with a Character Vector:
+subjects <- c("Statistics", "R", "Python", "Database")
+for (subject in subjects) {
+print(subject)
+}
+For Loop with a Sequence
+The seq() function can be useful for creating sequences.
+for (i in seq(2, 10, by = 2)) {
+print(i)
+}
+For Loop for Calculations
+Suppose we want to calculate the square of numbers from 1 to 5.
+for (i in 1:5) {
+square <- i^2
+print(square)
+}
+Calculate Sum Using a For Loop
+Suppose:
+x <- c(10, 20, 30, 40, 50)
+We can calculate the sum manually using a loop.
+total <- 0
+for (i in x) {
+total <- total + i
+}
+print(total)
+Calculate Mean Using a For Loop
+x <- c(10, 20, 30, 40, 50)
+total <- 0
+for (i in x) {
+total <- total + i
+}
+
+mean_value <- total / length(x)
+print(mean_value)
+
+For Loop with an Index
+Sometimes we need to know the position of each element.
+x <- c(10, 20, 30, 40, 50)
+for (i in 1:length(x)) {
+print(x[i])
+}
+For Loop and Conditional Statements
+Loops can be combined with if, if-else, and nested conditions.
+For example, classify students according to marks.
+marks <- c(85, 72, 48, 91, 65)
+for (mark in marks) {
+if (mark >= 80) {
+print("A")
+} else if (mark >= 60) {
+print("B")
+} else {
+print("C")
+}
+}
+Nested For Loop
+A nested loop is a loop inside another loop.
+Example
+for (i in 1:3) {
+for (j in 1:3) {
+print(paste(i, j))
+}
+}
+
+The outer loop executes three times, and for each iteration, the inner loop executes three
+times.
+Creating a Multiplication Table
+A nested loop can be used to create multiplication tables.
+for (i in 1:5) {
+for (j in 1:10) {
+print(paste(i, "×", j, "=", i * j))
+}
+}
+Statistical Application
+Suppose the marks of five students are:
+marks <- c(55, 67, 72, 81, 90)
+We want to identify whether each student has passed.
+for (mark in marks) {
+if (mark >= 40) {
+print("Pass")
+} else {
+print("Fail")
+}
+}
+Count Number of Even Values
+x <- c(12, 15, 18, 21, 24, 27)
+count <- 0
+for (i in x) {
+if (i %% 2 == 0) {
+count <- count + 1
+}
+}
+print(count)
+
+While Loop in R
+A while loop repeatedly executes statements as long as a specified condition remains
+TRUE.
+Syntax
+while (condition) {
+statements
+}
+The condition is checked before every iteration.
+Print 1 to 5
+i <- 1
+while (i <= 5) {
+print(i)
+i <- i + 1
+}
+While Loop for Even Numbers
+i <- 2
+while (i <= 20) {
+print(i)
+i <- i + 2
+}
+While Loop for Calculating a Sum
+i <- 1
+total <- 0
+while (i <= 10) {
+total <- total + i
+i <- i + 1
+}
+print(total)
+
+Example: Suppose we want to determine how many numbers from 1 onward are required
+for the cumulative sum to exceed 100.
+i <- 1
+total <- 0
+while (total <= 100) {
+total <- total + i
+i <- i + 1
+}
+print(i - 1)
+print(total)
+
+Repeat Loop in R
+The repeat loop executes a block of code again and again without automatically
+checking a stopping condition.
+Syntax
+repeat {statements if (condition) {
+break
+}
+}
+The break statement is normally required to terminate a repeat loop
+Example
+i <- 1
+repeat {
+print(i)
+i <- i + 1
+if (i > 5) {
+break
+}
+}
+
+Repeat Loop for Sum
+i <- 1
+total <- 0
+repeat {
+total <- total + i
+i <- i + 1
+if (i > 10) {
+break
+}
+}
+print(total)
+
+break Statement
+The break statement immediately terminates a loop.
+Example
+for (i in 1:10) {
+if (i == 6) {
+break
+}
+print(i)
+}
+next Statement
+The next statement skips the current iteration and moves to the next iteration.
+Example
+for (i in 1:10) {
+if (i == 5) {
+next
+}
+print(i)
+}
+
+Apply Family Functions in R
+The apply family is a group of R functions designed to perform the same operation
+repeatedly over elements of a vector, list, matrix, array, or grouped data.
+
+apply(): apply() is used to apply a function over the rows or columns of a matrix or
+array.
+Basic syntax: apply(X, MARGIN, FUN, ...)
+where:
+• X = matrix or array
+• MARGIN = dimension over which the function is applied
+• FUN = function to apply
+• ... = additional arguments to the function
+For a matrix:
+MARGIN = 1 → rows
+MARGIN = 2 → columns
+Matrix
+x <- matrix(1:12, nrow = 3)
+x
+Row sums: apply(x, 1, sum)
+Column sums: apply(x, 2, sum)
+Row means: apply(x, 1, mean)
+Column means: apply(x, 2, mean
+
+We can use functions such as:
+apply(x, 1, min)
+apply(x, 1, max)
+apply(x, 1, median)
+apply(x, 1, sd)
+
+lapply()
+• lapply() means list apply.
+• It applies a function to each element of a list or vector and always returns a list.
+Syntax: lapply(X, FUN, ...)
+Example 1
+x <- list(
+a = 1:5,
+b = 10:15,
+c = 20:25
+)
+lapply(x, mean)
+
+Square Numbers
+x <- list(
+a = 1:3,
+b = 4:6,
+c = 7:9
+)
+lapply(x, function(z) z^2)
+lapply() with Data Frames: A data frame is essentially a list of columns.
+Suppose:
+data <- data.frame(
+age = c(20, 25, 30, 35),
+income = c(20000, 25000, 30000, 40000),
+score = c(70, 80, 75, 90))
+
+Calculate the mean of every numeric column:
+lapply(data, mean)
+tapply(): tapply() is used to apply a function to a variable according to groups.
+Syntax: tapply(X, INDEX, FUN, ...)
+where:
+• X = data vector
+• INDEX = grouping variable/factor
+• FUN = function to apply
+Calculate a statistic separately for each group.
+Simple tapply() Example
+Suppose:
+marks <- c(70, 80, 65, 90, 75, 85)
+group <- c(
+"A", "A", "B", "B", "A", "B"
+)
+Calculate the mean marks for each group:
+tapply(marks, group, mean)
+
+tapply() for Gender Groups
+Suppose:
+age <- c(20, 25, 30, 35, 40, 45)
+gender <- c(
+"Male", "Female", "Male",
+"Female", "Male", "Female"
+)
+Calculate mean age by gender:
+tapply(age, gender, mean)
+
+tapply() with More Than One Grouping Variable
+tapply() can use multiple grouping variables.
+For example:
+age <- c(20, 25, 30, 35, 40, 45)
+sex <- c(
+"Male", "Female", "Male",
+"Female", "Male", "Female"
+)
+region <- c(
+"Urban", "Urban", "Rural",
+"Rural", "Urban", "Rural"
+)
+tapply(age, list(sex, region), mean)
+
+Data Visualization
+
+Scatter plots
+
+• In a graph in which the values of two variables are plotted along the X-axis and Y-
+axis, the pattern of the resulting points reveals a correlation between them.
+
+Syntax: plot(x, y, main, xlab, ylab, xlim, ylim, axes)
+Parameters:
+• x: Sets the horizontal coordinates.
+• y: Sets the vertical coordinates.
+• xlab: Label for the horizontal axis.
+• ylab: Label for the vertical axis.
+• main: Title of the chart.
+• xlim: Defines the x-axis range.
+• ylim: Defines the y-axis range
+• axes: Indicates whether both axes should be drawn.
+
+R code:
+x <- c(1, 2, 3, 4, 5)
+y <- c(2, 5, 4, 8, 10)
+plot(x, y,
+main = "Scatter Plot",
+xlab = "X values",
+ylab = "Y values",
+pch = 19)
+If your data are in a data frame:
+df <- data.frame(
+height = c(150, 160, 165, 170, 180),
+weight = c(50, 58, 62, 70, 80)
+)
+plot(df$height, df$weight,
+main = "Height vs Weight", xlab = "Height",
+ylab = "Weight",col = "blue", pch = 19)
+Use ggplot2:
+library(ggplot2)
+ggplot(df, aes(x = height, y = weight)) +
+geom_point() +
+labs(
+title = "Height vs Weight",
+x = "Height",
+y = "Weight"
+) +
+theme_minimal()
+Different colors based on a group
+
+x <- 1:10
+y <- c(3, 5, 4, 7, 8, 10, 9, 12, 11, 14)
+group <- c("A", "A", "A", "A", "A",
+"B", "B", "B", "B", "B")
+plot(x, y, pch = 19,
+col = ifelse(group == "A", "blue", "red"),
+main = "Scatter Plot by Group",
+xlab = "X",
+ylab = "Y")
+
+legend("topleft",
+legend = c("Group A", "Group B"),
+col = c("blue", "red"),
+pch = 19)
+## legend() → adds the group explanation to the plot.
+v <- c(17, 25, 38, 13, 41)
+t <- c(22, 19, 36, 19, 23)
+m <- c(25, 14, 16, 34, 29)
+plot(v, type = "o", col = "red", xlab = "Month", ylab = "Articles Written", main = "Articles
+Written Chart")
+lines(t, type = "o", col = "blue")
+lines(m, type = "o", col = "green")
+
+Adding Horizontal and Vertical Lines Using abline():
+# Create some sample data
+x <- 1:10
+y <- x^2
+plot(x, y)
+# Add a vertical line at x = 5
+abline(v = 5)
+# Add a horizontal line at y = 25
+abline(h = 25)
+# Add a diagonal line with slope 1 and intercept 0
+abline(a = 0, b = 1)
+# Add a line using the lines() function
+x2 <- 1:10
+y2 <- 2*x2 + 3
+lines(x2, y2, col = "red", lty = 2)
+Basic line graph
+
+x <- 1:6
+y <- c(10, 15, 12, 20, 18, 25)
+plot(x, y,
+type = "l",
+main = "Line Graph",
+xlab = "Time",
+ylab = "Value")
+Here:
+• x → values on the x-axis
+• y → values on the y-axis
+• type = "l" → draws a line
+• main → title
+• xlab → x-axis label
+• ylab → y-axis label
+Monthly Rainfall:
+month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun")
+rainfall <- c(12, 18, 35, 80, 220, 310)
+plot(rainfall,
+type = "o",
+pch = 19,
+col = "blue",
+xaxt = "n",
+main = "Monthly Rainfall",
+xlab = "Month",
+ylab = "Rainfall (mm)")
+axis(1, at = 1:6, labels = month)
+Add 2nd Line:
+month <- 1:6
+rainfall_2025 <- c(12, 18, 35, 80, 220, 310)
+rainfall_2026 <- c(15, 25, 40, 95, 200, 280)
+
+plot(month, rainfall_2025,
+type = "o",
+pch = 19,
+col = "blue",
+ylim = c(0, 350),
+xlab = "Month",
+ylab = "Rainfall (mm)",
+main = "Monthly Rainfall Comparison")
+lines(month, rainfall_2026,
+type = "o",
+pch = 17,
+col = "red")
+legend("topleft",
+legend = c("2025", "2026"),
+col = c("blue", "red"),
+pch = c(19, 17))
+
+Argument Purpose
+names.arg =Names of the categories
+main =Main title
+Xlab= X-axis label
+Ylab= Y-axis label
+col = Bar color
+border =Border color
+Horiz= Creates horizontal bars
+Beside= Creates grouped bars when TRUE
+legend.text =Adds legend
+ylim= Controls y-axis range
+xlim =Controls x-axis range
+cex.names= Controls category-name size
+cex.axis =controls axis-number size
+
+cex.main =Controls title size
+Las= Controls orientation of axis labels
+
+Simple Bar chart:
+A <- c(17, 32, 8, 53, 1)
+barplot(A, xlab = "X-axis", ylab = "Y-axis", main ="Bar-Chart")
+Customizing the Bar Chart
+students <- c(40, 55, 35, 60)
+departments <- c("Statistics", "Botany", "Pharmacy", "Chemistry")
+barplot(students,
+names.arg = departments,
+main = "Number of Students by Department",
+xlab = "Department",
+ylab = "Number of Students")
+Different color:
+barplot(students,
+names.arg = departments,
+col = c("blue", "red", "green", "orange"),
+main = "Number of Students by Department",
+xlab = "Department",
+ylab = "Number of Students")
+Bar Plot from a Frequency Table
+sex <- c("Male", "Female", "Female", "Male",
+"Female", "Female", "Male", "Female")
+freq <- table(sex)
+barplot(freq,
+col = c("skyblue", "pink"),
+main = "Students by Sex",
+xlab = "Sex",
+ylab = "Frequency")
+
+Add values on Top of Bars
+students <- c(40, 55, 35, 60)
+bp <- barplot(students,
+names.arg = departments,
+col = "skyblue",
+main = "Number of Students",
+ylab = "Students",
+ylim = c(0, 70))
+text(bp, students,
+labels = students,
+pos = 3)
+#####
+A <- c(17, 2, 8, 13, 1, 22)
+B <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun")
+
+barplot(A, names.arg = B, xlab = "Month",
+ylab = "Articles", col = "steelblue",
+main = "GeeksforGeeks - Article Chart",
+cex.main = 1.5, cex.lab = 1.2, cex.axis = 1.1)
+text(
+x = barplot(A, names.arg = B, col = "steelblue", ylim = c(0, max(A) * 1.2)),
+y = A + 1, labels = A, pos = 3, cex = 1.2, col = "black"
+)
+#cex means character expansion.
+
+##Position values in text()
+
+pos Position
+1 Below
+2 Left
+
+3 Above
+4 Right
+
+Grouped Bar Plot
+A grouped bar plot is used to compare two or more groups across the same categories.
+For example, suppose we have the number of male and female students in different
+departments.
+# Data
+students <- matrix(c(25, 30,
+15, 20,
+20, 25,
+15, 12),
+nrow = 2,
+byrow = TRUE)
+# Department names
+colnames(students) <- c("Statistics",
+"Botany",
+"Pharmacy",
+"Chemistry")
+# Gender names
+rownames(students) <- c("Male", "Female")
+
+# Create grouped bar plot
+bar <- barplot(students,
+beside = TRUE,
+col = c("skyblue", "pink"),
+border = "black",
+main = "Male and Female Students by Department",
+xlab = "Department",
+ylab = "Number of Students",
+ylim = c(0, 35),
+cex.main = 1,
+cex.axis = 0.7,
+cex.lab = 0.7,
+cex.names = 0.7,
+las = 1)
+# Add values above bars
+text(x = bar,
+y = students,
+labels = students,
+pos = 3,
+cex = 0.5)
+
+# Add legend
+legend("topright",
+legend = c("Male", "Female"),
+fill = c("skyblue", "pink"),
+border = "black",
+bty = "n",
+cex = 0.5)
+Important argument
+beside = TRUE; places the bars side by side.
+This produces a grouped bar plot.
+Bty:
+bty = "o" → box around the legend
+bty = "n" → no box around the legend
+###las: las controls the orientation of axis labels and tick labels in a plot.
+
+par(mfrow = ...) is used to display multiple plots in the same plotting window.
+Syntax: par(mfrow = c(number_of_rows, number_of_columns))
+mfrow → multiple separate plots
+new = TRUE → overlapping plots# par(new = TRUE)
+# dev.off()→ closes/clears the current graphics device
+par(mfrow = c(2, 2))
+plot(1:5, main = "Plot 1")
+plot(5:1, main = "Plot 2")
+plot(1:10, main = "Plot 3")
+plot(10:1, main = "Plot 4")

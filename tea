@@ -1,100 +1,360 @@
-#one sample Z-Test:
-Given: xbar= 53, μ0 = 50, σ = 10, n = 36
-z <- (53 - 50) / (10 / sqrt (36) )
-z
-alpha =0.05
-z _ crit <- qnorm (1 - alpha )
-z _ crit
-Reject H0 if abs ( z ) > z_crit
+###OC curve
+N = 10000
+n = 200
+c = 2
 
-#one sample t test:
-Given: Sample
-x = [52, 49, 51, 50, 53, 48, 54, 52, 47, 51, 50, 49, 52, 53, 48, 51]
-x <- c
-(52 ,49 ,51 ,50 ,53 ,48 ,54 ,52 ,47 ,51 ,50 ,49 ,52 ,53 ,48 ,51)
-n <- length ( x )
-xbar <- mean ( x )
-s <- sd ( x )
-mu0 <- 50
-t _ stat <- ( xbar - mu0 ) / ( s / sqrt ( n ) )
-t _ stat
-Step 2: Critical Value
-t _ crit <- qt (0.975 , df = n -1)
-t _ crit
-Step 3: Decision
-if(abs(ts tat) > tc rit) ”Reject H0” else ”FailtoRejectH0”
+p = seq(0, 0.05, by = 0.001)
 
-#paired t test:
-Given: Before and After data
-before <- c (70 ,65 ,80 ,75 ,68 ,72 ,77 ,69 ,74 ,71)
-after <- c (75 ,70 ,85 ,78 ,72 ,76 ,80 ,73 ,79 ,74)
-d <- before - after
-n <- length ( d )
-dbar <- mean ( d )
-sd _ d <- sd ( d )
-t _ stat <- dbar / ( sd _ d / sqrt ( n ) )
-t _ stat
-t _ crit <- qt (0.975 , df = n -1)
-t _ crit
+lambda = n * p
 
-#two sample t test: equal variance
-group1 <- c (60 ,62 ,59 ,61 ,58 ,63 ,57 ,64 ,60 ,59)
-group2 <- c (55 ,54 ,56 ,53 ,57 ,52 ,58 ,54 ,55 ,56)
-n1 <- length ( group1 )
-n2 <- length ( group2 )
-xbar1 <- mean ( group1 )
-xbar2 <- mean ( group2 )
-s1 <- sd ( group1 )
-s2 <- sd ( group2 )
-sp2 <- (( n1 -1) * s1 ^2 + ( n2 -1) * s2 ^2) / ( n1 + n2 -2)
-sp <- sqrt ( sp2 )
-t _ stat <- ( xbar1 - xbar2 ) / ( sp * sqrt (1 / n1 + 1 / n2 ) )
-t _ stat
-t _ crit <- qt (0.975 , df = n1 + n2 -2)
-t _ crit
+Pa = ppois(c, lambda)
 
-#two sample t test: unequal var/welch 
-group1 <- c (70 ,75 ,68 ,72 ,69 ,74 ,73 ,71)
-group2 <- c (60 ,62 ,58 ,61 ,59 ,63 ,57 ,64)
-n1 <- length ( group1 )
-n2 <- length ( group2 )
-xbar1 <- mean ( group1 )
-xbar2 <- mean ( group2 )
-s1 <- sd ( group1 )
-s2 <- sd ( group2 )
-t _ stat <- ( xbar1 - xbar2 ) / sqrt ( s1 ^2 / n1 + s2 ^2 / n2 )
-df <- ( s1 ^2 / n1 + s2 ^2 / n2 ) ^2 /
-(( s1 ^2 / n1 ) ^2 / ( n1 -1) + ( s2 ^2 / n2 ) ^2 / ( n2 -1) )
-t _ crit <- qt (0.975 , df = df )
+AOQ = p * Pa * ((N - n) / N)
+AOQL = max(AOQ)
+AOQL
+p_AOQL = p[which.max(AOQ)]
+p_AOQL
+ATI = n * Pa + N * (1 - Pa)
 
-#Mean test in R by using package:
-Note: R does NOT have built-in z.test() function. We use the BSDA
-package.
-Install and Load Package:
-install . packages ( " BSDA " )
-library ( BSDA )
-####
-mu0=70
-mu1=75
-alpha=0.05
-sigma=10
-n=36
-SE=sigma/sqrt(n)
-Z_alpha=qnorm(1-alpha)
-critical_mean=mu0+Z_alpha*SE
-x=seq(60,90,length=1000)
+cat("AOQL =", AOQL,
+    "% at p =", p_AOQL * 100, "%\n")
+par(mfrow = c(1, 3))
 
-h0=dnorm(x,mu0,SE)
-h1=dnorm(x,mu1,SE)
-plot(x,h0,type="l",main="plot",xlab="sample mean",ylab="density",col="blue")
-lines(x,h1,col="red")
-abline(v=critical_mean,col="red",lty=3,lwd=2)
-x_p=seq(critical_mean,90,length=1000)
-z_p=dnorm(x_p,mu1,SE)
-polygon(c(critical_mean,x_p),c(0,z_p),col="pink")
-legend("topright",
-       legend = c("H0", "H1", "Power"),
-       col = c("blue", "red", "pink"),
-       lwd = 2,
-       cex = 0.8,
-       bty = "n")
+plot(p * 100, Pa,
+     type = "l",
+     lwd = 2,
+     xlab = "Incoming Fraction Defective (%)",
+     ylab = "Probability of Acceptance",
+     main = "OC Curve - Poisson Sampling")
+
+plot(p * 100, AOQ * 100,
+     type = "l",
+     lwd = 2,
+     xlab = "Incoming Fraction Defective (%)",
+     ylab = "AOQ (%)",
+     main = "AOQ Curve - Poisson Sampling")
+
+abline(h = AOQL * 100, lty = 2)
+
+plot(p * 100, ATI,
+     type = "l",
+     lwd = 2,
+     xlab = "Incoming Fraction Defective (%)",
+     ylab = "Average Total Inspection",
+     main = "ATI Curve - Poisson Sampling")
+
+##0C2
+N = 10000; n = 200; c_acc = 2
+p   = seq(0, 0.05, by = 0.001)
+
+Pa  = ppois(c_acc, n * p)          # OC
+AOQ = p * Pa * (N - n) / N         # AOQ
+ATI = N - Pa * (N - n)             # ATI (= n*Pa + N*(1-Pa))
+
+AOQL   = max(AOQ)
+p_AOQL = p[which.max(AOQ)]
+cat("AOQL =", AOQL * 100, "% at p =", p_AOQL * 100, "%\n")
+
+par(mfrow = c(1, 3))               # 3 ta plot ek line e
+plot(p*100, Pa,  type="l", lwd=2, xlab="Incoming Defective (%)",
+     ylab="Pa",  main="OC Curve")
+plot(p*100, AOQ*100, type="l", lwd=2, xlab="Incoming Defective (%)",
+     ylab="AOQ (%)", main="AOQ Curve"); abline(h=AOQL*100, lty=2)
+plot(p*100, ATI, type="l", lwd=2, xlab="Incoming Defective (%)",
+     ylab="ATI", main="ATI Curve")
+
+##X bar chart 
+
+data=matrix(c(
+  27,23,36,14,
+  28, 30, 30, 17,
+  21, 22, 41, 44,
+  42, 35, 28, 40,
+  51, 23, 21, 34,
+  33, 34, 39, 30,
+  30, 22, 18, 12,
+  35, 48, 20, 47,
+  20, 34, 15, 42,
+  22, 50, 45, 41,
+  34, 32, 48, 22,
+  44, 24, 32, 33,
+  30, 28, 28, 25,
+  30, 38, 38, 52,
+  36, 32, 39, 45,
+  44, 48, 33, 34,
+  39, 44, 29, 40,
+  38, 44, 32, 27,
+  39, 34, 32, 28,
+  38, 34, 36, 30),
+  byrow = T,ncol=4)
+data
+sample.means=rowMeans(data)
+sample.means
+sample.ranges= apply(data,1,function(x)max(x)-min(x))
+sample.ranges
+x_barbar=mean(sample.means)
+x_barbar
+R_bar=mean(sample.ranges)
+R_bar
+A2=0.729
+D3=0
+D4=2.282
+
+CL=x_barbar
+UCL=x_barbar+A2*R_bar
+LCL=x_barbar-A2*R_bar
+plot(sample.means,type='b',pch=19,col="purple",main="x_bar chart",xlab="sample No",ylab="sample mean",ylim=range(sample.means,UCL,LCL))
+abline(h=c(CL,UCL,LCL),col=c("blue","red","red"),lty=2)
+legend('topright',legend=c("sample mean",'CL',"UCL/LCL"),col=c("purple","blue","red"),lty=c(1,2,2),pch=c(19,NA,NA),bty="n")
+
+### Mazimization minimization
+#For maximization objective function
+library(lpSolve)
+objective <- c(50, 40)
+constraints <- matrix(c(2, 3, 3, 2), nrow = 2, byrow = TRUE)
+rhs <- c(100, 90)
+direction <- c("<=", "<=")
+
+solution <- lp("max", objective, constraints, direction, rhs, compute.sens = TRUE)
+solution
+optimal_values <- solution$solution
+max_profit <- solution$objval
+
+
+library(ggplot2)
+constraint1 <- function(x) (100 - 2 * x) / 3
+constraint2 <- function(x) (90 - 3 * x) / 2
+
+# Define the range of x values
+x_values <- seq(0, 50, length.out = 400)
+# Create a data frame for ggplot
+df <- data.frame(x = x_values,
+                 y1 = pmax(0, constraint1(x_values)),
+                 y2 = pmax(0, constraint2(x_values)))
+
+# Plot the constraints and feasible region
+ggplot(df, aes(x = x)) +
+  geom_line(aes(y = y1), color = "blue", size = 1) +
+  geom_line(aes(y = y2), color = "red", size = 1) +
+  geom_ribbon(aes(ymin = 0, ymax = pmin(y1, y2)), fill = "pink", alpha = 0.5) +
+  geom_point(aes(x = optimal_values[1], y = optimal_values[2]), color = "green", size = 3) +
+  labs(title = "Feasible Region and Optimal Solution",
+       x = "Units of P1",
+       y = "Units of P2") +
+  annotate("text", x = optimal_values[1], y = optimal_values[2], label = "Optimal Solution", hjust = -0.2, vjust = -1.5) +
+  xlim(0, 50) +
+  ylim(0, 50) +
+  theme_minimal()
+
+
+
+########
+########
+
+#For minimization objective function
+########
+########
+library(lpSolve)
+
+# Objective function coefficients
+objective <- c(6, 4)
+
+# Constraint matrix
+constraints <- matrix(c(2, 1,
+                        1, 2),
+                      nrow = 2, byrow = TRUE)
+
+# Right-hand side
+rhs <- c(8, 7)
+direction <- c(">=", ">=")
+solution <- lp("min", objective, constraints, direction, rhs, compute.sens = TRUE)
+
+solution
+optimal_values <- solution$solution
+min_cost <- solution$objval
+
+library(ggplot2)
+
+# Constraint boundary functions
+constraint1 <- function(x) (8 - 2*x)
+constraint2 <- function(x) (7 - 1*x) / 2
+
+# Generate x values
+x_values <- seq(0, 10, length.out = 400)
+
+# Data frame for plotting
+df <- data.frame(
+  x = x_values,
+  y1 = constraint1(x_values),
+  y2 = constraint2(x_values)
+)
+
+# Keep only non-negative values
+
+# Create separate data frame for optimal solution
+opt_df <- data.frame(
+  x = optimal_values[1],
+  y = optimal_values[2]
+)
+
+ggplot(df, aes(x = x)) +
+  geom_line(aes(y = y1), color = "blue", size = 1.2) +
+  geom_line(aes(y = y2), color = "red", size = 1.2) +
+  geom_ribbon(aes(ymin =pmax(y1, y2) , ymax = Inf),
+              fill = "lightgreen", alpha = 0.4) +
+  geom_point(data = opt_df, aes(x = x, y = y),
+             color = "black", size = 4) +
+  labs(
+    title = "Feasible Region and Optimal Solution (Minimization)",
+    x = "Units of Material 1",
+    y = "Units of Material 2"
+  ) +
+  xlim(0, 10) +
+  ylim(0, 10) +
+  theme_minimal()
+
+##control chart
+# p-chart for Spark Plug Inspection
+# Step 1: Enter the data (number of defectives per lot)
+defectives <- c(5,3,15,10,3,16,4,10,5,8,
+                5,4,6,8,7,4,6,8,6,10)
+
+n <- 100   # sample size per lot
+lots <- 1:length(defectives)
+
+#Step 2: Compute proportion defective per lot 
+p_i <- defectives / n
+
+# Step 3: Compute overall average proportion defective
+p_bar <- sum(defectives) / (length(defectives)*n)
+
+#Step 4: Compute control limits
+SE <- sqrt(p_bar * (1 - p_bar) / n)
+UCL <- p_bar + 3*SE
+LCL <- p_bar - 3*SE
+if (LCL < 0) LCL <- 0
+
+#Step 5: Plot the p-chart
+plot(lots, p_i, type="b", pch=19, col="blue",
+     ylim=c(0, max(p_i,UCL)*1.3),
+     main="p-Chart for Spark Plug Inspection",
+     xlab="Lot Number", ylab="Fraction Defective")
+
+# Add center line and control limits
+abline(h=p_bar, col="darkgreen", lwd=2)
+abline(h=UCL, col="red", lty=2, lwd=2)
+abline(h=LCL, col="red", lty=2, lwd=2)
+
+# Add legend
+legend("topright", legend=c("p_i (each lot)","Center Line","UCL/LCL"),
+       col=c("blue","darkgreen","red"),
+       lty=c(1,1,2), pch=c(19,NA,NA), bty="n")
+
+##maximization minimization 2 
+#For maximization objective function
+install.packages("lpSolve")
+library(lpSolve)
+install.packages("ggplot2")
+library(ggplot2)
+objective <- c(50, 40)
+constraints <- matrix(c(2, 3, 3, 2), nrow = 2, byrow = TRUE)
+rhs <- c(100, 90)
+direction <- c("<=", "<=")
+
+solution <- lp("max", objective, constraints, direction, rhs, compute.sens = TRUE)
+solution
+optimal_values <- solution$solution
+max_profit <- solution$objval
+
+
+library(ggplot2)
+constraint1 <- function(x) (100 - 2 * x) / 3
+constraint2 <- function(x) (90 - 3 * x) / 2
+
+# Define the range of x values
+x_values <- seq(0, 50, length.out = 400)
+# Create a data frame for ggplot
+df <- data.frame(x = x_values,
+                 y1 = pmax(0, constraint1(x_values)),
+                 y2 = pmax(0, constraint2(x_values)))
+
+# Plot the constraints and feasible region
+ggplot(df, aes(x = x)) +
+  geom_line(aes(y = y1), color = "blue", size = 1) +
+  geom_line(aes(y = y2), color = "red", size = 1) +
+  geom_ribbon(aes(ymin = 0, ymax = pmin(y1, y2)), fill = "pink", alpha = 0.5) +
+  geom_point(aes(x = optimal_values[1], y = optimal_values[2]), color = "green", size = 3) +
+  labs(title = "Feasible Region and Optimal Solution",
+       x = "Units of P1",
+       y = "Units of P2") +
+  annotate("text", x = optimal_values[1], y = optimal_values[2], label = "Optimal Solution", hjust = -0.2, vjust = -1.5) +
+  xlim(0, 50) +
+  ylim(0, 50) +
+  theme_minimal()
+
+
+
+########
+########
+
+#For minimization objective function
+########
+########
+library(lpSolve)
+
+# Objective function coefficients
+objective <- c(6, 4)
+
+# Constraint matrix
+constraints <- matrix(c(2, 1,
+                        1, 2),
+                      nrow = 2, byrow = TRUE)
+
+# Right-hand side
+rhs <- c(8, 7)
+direction <- c(">=", ">=")
+solution <- lp("min", objective, constraints, direction, rhs, compute.sens = TRUE)
+
+solution
+optimal_values <- solution$solution
+min_cost <- solution$objval
+
+library(ggplot2)
+
+# Constraint boundary functions
+constraint1 <- function(x) (8 - 2*x)
+constraint2 <- function(x) (7 - 1*x) / 2
+
+# Generate x values
+x_values <- seq(0, 10, length.out = 400)
+
+# Data frame for plotting
+df <- data.frame(
+  x = x_values,
+  y1 = constraint1(x_values),
+  y2 = constraint2(x_values)
+)
+
+# Keep only non-negative values
+
+# Create separate data frame for optimal solution
+opt_df <- data.frame(
+  x = optimal_values[1],
+  y = optimal_values[2]
+)
+
+ggplot(df, aes(x = x)) +
+  geom_line(aes(y = y1), color = "blue", size = 1.2) +
+  geom_line(aes(y = y2), color = "red", size = 1.2) +
+  geom_ribbon(aes(ymin =pmax(y1, y2) , ymax = Inf),
+              fill = "lightgreen", alpha = 0.4) +
+  geom_point(data = opt_df, aes(x = x, y = y),
+             color = "black", size = 4) +
+  labs(
+    title = "Feasible Region and Optimal Solution (Minimization)",
+    x = "Units of Material 1",
+    y = "Units of Material 2"
+  ) +
+  xlim(0, 10) +
+  ylim(0, 10) +
+  theme_minimal()

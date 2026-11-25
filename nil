@@ -122,6 +122,45 @@ legend("topright",
        lty = c(1, 1, 2), 
        pch = c(19, NA, NA))
 
+
+# p-chart for Spark Plug Inspection
+# Step 1: Enter the data (number of defectives per lot)
+defectives <- c(5,3,15,10,3,16,4,10,5,8,
+                5,4,6,8,7,4,6,8,6,10)
+
+n <- 100   # sample size per lot
+lots <- 1:length(defectives)
+
+#Step 2: Compute proportion defective per lot 
+p_i <- defectives / n
+
+# Step 3: Compute overall average proportion defective
+p_bar <- sum(defectives) / (length(defectives)*n)
+
+#Step 4: Compute control limits
+SE <- sqrt(p_bar * (1 - p_bar) / n)
+UCL <- p_bar + 3*SE
+LCL <- p_bar - 3*SE
+if (LCL < 0) LCL <- 0
+
+#Step 5: Plot the p-chart
+plot(lots, p_i, type="b", pch=19, col="blue",
+     ylim=c(0, max(p_i,UCL)*1.3),
+     main="p-Chart for Spark Plug Inspection",
+     xlab="Lot Number", ylab="Fraction Defective")
+
+# Add center line and control limits
+abline(h=p_bar, col="darkgreen", lwd=2)
+abline(h=UCL, col="red", lty=2, lwd=2)
+abline(h=LCL, col="red", lty=2, lwd=2)
+
+# Add legend
+legend("topright", legend=c("p_i (each lot)","Center Line","UCL/LCL"),
+       col=c("blue","darkgreen","red"),
+       lty=c(1,1,2), pch=c(19,NA,NA), bty="n")
+
+
+
 # d-chart (np-chart) for Spark Plug Inspection
 # Step 1: Enter the data (number of defectives per lot)
 defectives <- c(5,3,15,10,3,16,4,10,5,8,
@@ -154,6 +193,8 @@ legend("topright", legend=c("d_i (each lot)","Center Line","UCL/LCL"),
        col=c("blue","darkgreen","red"),
        lty=c(1,1,2), pch=c(19,NA,NA), bty="n")
 
+
+
 # c-chart: number of defects per inspection unit
 # Step 1: Enter the data (number of defects per unit)
 defects <- c(21,24,16,12,15,5,28,20,31,25,
@@ -183,6 +224,8 @@ abline(h=LCL, col="red", lty=2, lwd=2)
 legend("topright", legend=c("c_i (each unit)","Center Line","UCL/LCL"),
        col=c("blue","darkgreen","red"),
        lty=c(1,1,2), pch=c(19,NA,NA), bty="n")
+
+
 
 # u-chart: defects per unit (variable number of units)
 # Step 1: Enter the data
@@ -218,6 +261,8 @@ lines(samples, LCL, type="s", col="red", lty=2, lwd=2)
 legend("topright", legend=c("u_i (each sample)","Center Line","UCL/LCL"),
        col=c("blue","darkgreen","red"),
        lty=c(1,1,2), pch=c(19,NA,NA), bty="n")
+
+
 
 # p-chart with variable sample size
 # Step 1: Enter the data
